@@ -1,0 +1,485 @@
+[
+    {
+        "task_id": "cb227835",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            13,
+            14
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.7328,
+        "metrics": {
+            "core_acc": 0.8901,
+            "core_count": 182
+        },
+        "avg_step_time_sec": 0.004148,
+        "avg_obs_build_time_sec": 8.6e-05,
+        "avg_model_forward_time_sec": 0.003985
+    },
+    {
+        "task_id": "c3202e5a",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            5,
+            5
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.7383,
+        "metrics": {
+            "core_acc": 0.64,
+            "core_count": 25
+        },
+        "avg_step_time_sec": 0.004154,
+        "avg_obs_build_time_sec": 8.6e-05,
+        "avg_model_forward_time_sec": 0.003992
+    },
+    {
+        "task_id": "9b2a60aa",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            13,
+            24
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.7461,
+        "metrics": {
+            "core_acc": 0.9231,
+            "core_count": 312
+        },
+        "avg_step_time_sec": 0.004162,
+        "avg_obs_build_time_sec": 8.6e-05,
+        "avg_model_forward_time_sec": 0.004
+    },
+    {
+        "task_id": "be03b35f",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            2,
+            2
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.7379,
+        "metrics": {
+            "core_acc": 0.5,
+            "core_count": 4
+        },
+        "avg_step_time_sec": 0.004153,
+        "avg_obs_build_time_sec": 8.6e-05,
+        "avg_model_forward_time_sec": 0.003992
+    },
+    {
+        "task_id": "bc4146bd",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            4,
+            20
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.729,
+        "metrics": {
+            "core_acc": 0.2,
+            "core_count": 80
+        },
+        "avg_step_time_sec": 0.004143,
+        "avg_obs_build_time_sec": 8.7e-05,
+        "avg_model_forward_time_sec": 0.003981
+    },
+    {
+        "task_id": "2f0c5170",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            7,
+            9
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6491,
+        "metrics": {
+            "core_acc": 0.1587,
+            "core_count": 63
+        },
+        "avg_step_time_sec": 0.004055,
+        "avg_obs_build_time_sec": 8.4e-05,
+        "avg_model_forward_time_sec": 0.003897
+    },
+    {
+        "task_id": "17b80ad2",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            17,
+            17
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6412,
+        "metrics": {
+            "core_acc": 0.8651,
+            "core_count": 289
+        },
+        "avg_step_time_sec": 0.004046,
+        "avg_obs_build_time_sec": 8.5e-05,
+        "avg_model_forward_time_sec": 0.003885
+    },
+    {
+        "task_id": "b1fc8b8e",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            5,
+            5
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6425,
+        "metrics": {
+            "core_acc": 0.36,
+            "core_count": 25
+        },
+        "avg_step_time_sec": 0.004047,
+        "avg_obs_build_time_sec": 8.6e-05,
+        "avg_model_forward_time_sec": 0.003886
+    },
+    {
+        "task_id": "b1fc8b8e",
+        "test_index": 1,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            5,
+            5
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6544,
+        "metrics": {
+            "core_acc": 0.6,
+            "core_count": 25
+        },
+        "avg_step_time_sec": 0.00406,
+        "avg_obs_build_time_sec": 8.6e-05,
+        "avg_model_forward_time_sec": 0.003901
+    },
+    {
+        "task_id": "72207abc",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            3,
+            29
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6358,
+        "metrics": {
+            "core_acc": 0.9425,
+            "core_count": 87
+        },
+        "avg_step_time_sec": 0.00404,
+        "avg_obs_build_time_sec": 8.2e-05,
+        "avg_model_forward_time_sec": 0.003885
+    },
+    {
+        "task_id": "0607ce86",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            24,
+            22
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6451,
+        "metrics": {
+            "core_acc": 0.9015,
+            "core_count": 528
+        },
+        "avg_step_time_sec": 0.00405,
+        "avg_obs_build_time_sec": 8.3e-05,
+        "avg_model_forward_time_sec": 0.003892
+    },
+    {
+        "task_id": "bcb3040b",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            18,
+            18
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6121,
+        "metrics": {
+            "core_acc": 0.9506,
+            "core_count": 324
+        },
+        "avg_step_time_sec": 0.004013,
+        "avg_obs_build_time_sec": 8.1e-05,
+        "avg_model_forward_time_sec": 0.00386
+    },
+    {
+        "task_id": "c1990cce",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            17,
+            17
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6003,
+        "metrics": {
+            "core_acc": 0.7855,
+            "core_count": 289
+        },
+        "avg_step_time_sec": 0.004,
+        "avg_obs_build_time_sec": 8e-05,
+        "avg_model_forward_time_sec": 0.003848
+    },
+    {
+        "task_id": "1e97544e",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            23,
+            23
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6023,
+        "metrics": {
+            "core_acc": 0.862,
+            "core_count": 529
+        },
+        "avg_step_time_sec": 0.004003,
+        "avg_obs_build_time_sec": 8e-05,
+        "avg_model_forward_time_sec": 0.003849
+    },
+    {
+        "task_id": "c87289bb",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            10,
+            15
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6066,
+        "metrics": {
+            "core_acc": 0.78,
+            "core_count": 150
+        },
+        "avg_step_time_sec": 0.004007,
+        "avg_obs_build_time_sec": 8.4e-05,
+        "avg_model_forward_time_sec": 0.003849
+    },
+    {
+        "task_id": "17cae0c1",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            3,
+            9
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6047,
+        "metrics": {
+            "core_acc": 0.0,
+            "core_count": 27
+        },
+        "avg_step_time_sec": 0.004005,
+        "avg_obs_build_time_sec": 8e-05,
+        "avg_model_forward_time_sec": 0.003853
+    },
+    {
+        "task_id": "baf41dbf",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            16,
+            17
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6051,
+        "metrics": {
+            "core_acc": 0.8162,
+            "core_count": 272
+        },
+        "avg_step_time_sec": 0.004006,
+        "avg_obs_build_time_sec": 8e-05,
+        "avg_model_forward_time_sec": 0.003854
+    },
+    {
+        "task_id": "c62e2108",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            24,
+            24
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6016,
+        "metrics": {
+            "core_acc": 0.75,
+            "core_count": 576
+        },
+        "avg_step_time_sec": 0.004002,
+        "avg_obs_build_time_sec": 8.3e-05,
+        "avg_model_forward_time_sec": 0.003843
+    },
+    {
+        "task_id": "27a77e38",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            9,
+            9
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6016,
+        "metrics": {
+            "core_acc": 0.9877,
+            "core_count": 81
+        },
+        "avg_step_time_sec": 0.004002,
+        "avg_obs_build_time_sec": 8.2e-05,
+        "avg_model_forward_time_sec": 0.003846
+    },
+    {
+        "task_id": "604001fa",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            15,
+            12
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6694,
+        "metrics": {
+            "core_acc": 0.7778,
+            "core_count": 180
+        },
+        "avg_step_time_sec": 0.004077,
+        "avg_obs_build_time_sec": 8.3e-05,
+        "avg_model_forward_time_sec": 0.00392
+    },
+    {
+        "task_id": "136b0064",
+        "test_index": 0,
+        "match": false,
+        "status": "completed",
+        "target_shape": [
+            19,
+            7
+        ],
+        "predicted_shape_before_crop": [
+            30,
+            30
+        ],
+        "cropped_prediction_shape": null,
+        "simulation_duration_sec": 3.6157,
+        "metrics": {
+            "core_acc": 0.5113,
+            "core_count": 133
+        },
+        "avg_step_time_sec": 0.004017,
+        "avg_obs_build_time_sec": 8.1e-05,
+        "avg_model_forward_time_sec": 0.003864
+    }
+]

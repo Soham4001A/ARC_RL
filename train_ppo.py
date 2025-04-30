@@ -18,6 +18,7 @@ from stable_baselines3 import PPO as BasePPO
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.policies import ActorCriticPolicy
+from stable_baselines3.common.running_mean_std import RunningMeanStd
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor, NatureCNN
 from stable_baselines3.common.callbacks import BaseCallback,CheckpointCallback, CallbackList 
 
@@ -36,20 +37,19 @@ MAX_TRAIN_PAIRS = arc_env.MAX_TRAIN_PAIRS # <-- Get MAX_TRAIN_PAIRS from env
 EVAL_DATA_DIR = Path("./data/evaluation") # <-- Define eval data path
 EVAL_LOG_DIR = Path("./evaluation_logs")  # <-- Define log directory
 
-USE_CNN = True
+USE_CNN = False
 
 # --- LMA Configuration ---
 # (Keep your LMA configuration as before)
-LMA_SEQ_LEN = H * W
-#LMA_SEQ_LEN = 11
-LMA_EMBED_DIM = 256
-LMA_NUM_HEADS_STACKING = 256
+LMA_SEQ_LEN = 900
+LMA_EMBED_DIM = 2048
+LMA_NUM_HEADS_STACKING = 32
 #LMA_TARGET_L_NEW = 11
-LMA_TARGET_L_NEW = 256
-LMA_D_NEW = 256
+LMA_TARGET_L_NEW = 128
+LMA_D_NEW = 512
 LMA_NUM_HEADS_LATENT = 32
-LMA_FF_LATENT_HIDDEN = LMA_D_NEW * 4
-LMA_NUM_LAYERS = 4
+LMA_NUM_LAYERS = 6
+LMA_FF_LATENT_HIDDEN = LMA_D_NEW * LMA_NUM_LAYERS
 LMA_DROPOUT = 0.1
 LMA_BIAS = True
 
@@ -67,8 +67,8 @@ except ValueError as e:
     exit()
 
 # --- Head Dimensions (using LMA output) ---
-VALUE_HIDDEN_DIM = 256
-POLICY_HIDDEN_DIM = 512
+VALUE_HIDDEN_DIM = 512
+POLICY_HIDDEN_DIM = 1024
 CNN_FEATURES_DIM = 512 # Example dimension, adjust as needed
 
 # --- ADDED STARTUP PRINT ---
@@ -660,15 +660,16 @@ class ARCEvalCallback(BaseCallback):
 
 
 # ─── Training Setup (Adjust hyperparameters as needed) ──────────────
-TOTAL_STEPS = 10_000_000 # Might need significantly more steps
+TOTAL_STEPS = 50_000_000 # Might need significantly more steps
 N_ENVS      = 32
-LR          = 1e-4
-N_STEPS     = H * W    # Rollout buffer size per env (900)
-MINIBATCH_SIZE = 64
-N_EPOCHS    = 10
-CLIP_RANGE  = 0.1
+LR          = 6e-4
+# N_STEPS     = H * W    # Rollout buffer size per env (900)
+N_STEPS     = 900   # Rollout buffer size per env (900)
+MINIBATCH_SIZE = 900
+N_EPOCHS    = 5
+CLIP_RANGE  = 0.2
 ENT_COEF    = 0.01
-VF_COEF     = 0.5 #Vf loss is way too high compared to policy loss
+VF_COEF     = 0.3 #Vf loss is way too high compared to policy loss
 GAE_LAMBDA  = 0.95
 GAMMA       = 0.99
 MAX_GRAD_NORM = 0.5
@@ -724,9 +725,25 @@ optimizer_kwargs = {
 
 
 print("Setting up vectorized environment...")
+# Create and normalize the vectorized environment
+# Warm up VecNormalize so obs_rms.mean/var get initialized
 venv = make_vec_env(make_env, n_envs=N_ENVS, vec_env_cls=DummyVecEnv)
-#venv = VecNormalize(venv, norm_obs=True, norm_reward=True, gamma=GAMMA)
-print(f"Vectorized environment created with {N_ENVS} parallel envs.")
+venv = VecNormalize(venv, norm_obs=True, norm_reward=True, gamma=GAMMA)
+
+# # — add these lines to force‐initialize obs_rms
+# obs_shape = venv.observation_space.shape
+# venv.obs_rms = RunningMeanStd(shape=obs_shape)
+
+# # (optionally) then do the warm-up loop to populate the stats:
+# print("Warming up VecNormalize…")
+# obs = venv.reset()
+# for _ in range(100):
+#     actions = [venv.action_space.sample() for _ in range(venv.num_envs)]
+#     obs, _, dones, infos = venv.step(actions)
+#     if any(dones):
+#         obs = venv.reset()
+# print("Warm-up complete.")
+
 
 print("\n--- PPO Configuration ---")
 print(f"Using LMAFeaturesExtractor")

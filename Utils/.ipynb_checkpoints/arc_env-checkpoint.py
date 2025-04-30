@@ -45,7 +45,8 @@ def pad_grid(grid, target_shape=(H, W), fill=0):
 class ARCPuzzleEnv(Env):
     """
     Autoregressive painting with few-shot examples in observation.
-    Modified reward function.
+    Includes immediate pixel rewards, patch-based shaping reward,
+    repaint penalty, time penalty, and terminal bonus.
     """
     metadata = {"render_modes": []}
 
@@ -60,7 +61,7 @@ class ARCPuzzleEnv(Env):
         # State variables
         self.canvas = np.full((H, W), -1, dtype=np.int8)
         self.generated_input = None
-        self.generated_output = None
+        self.generated_output = None # Padded target grid
         self.original_train_pairs = []
         self.task_id = None
         self.cur_step = 0
@@ -72,58 +73,56 @@ class ARCPuzzleEnv(Env):
         self.original_width = 0
         # --- End new attributes ---
 
+        # --- Patch Reward Parameters ---
+        self.patch_size = 3
+        self.max_patch_reward = 1.0 # Max bonus for a perfectly correct patch (scaled linearly)
+        # --- End Patch Parameters ---
 
-    # --- (_load_original_task, _generate_example_for_task, _obs methods remain the same) ---
+
+    # --- (_load_original_task, _generate_example_for_task, _obs methods - unchanged) ---
     def _load_original_task(self, task_id):
-        """Loads the original train pairs for a given task ID."""
         task_file = ORIGINAL_ARC_TASKS.get(task_id)
-        if not task_file:
-            raise FileNotFoundError(f"Original ARC task file not found for ID: {task_id}")
+        if not task_file: raise FileNotFoundError(f"Original task file not found: {task_id}")
         try:
-            with open(task_file, 'r') as f:
-                task_data = json.load(f)
+            with open(task_file, 'r') as f: task_data = json.load(f)
             return task_data.get('train', [])[:MAX_TRAIN_PAIRS]
-        except Exception as e:
-            print(f"Error loading/parsing original task {task_id}: {e}")
-            return []
+        except Exception as e: print(f"Error loading task {task_id}: {e}"); return []
 
     def _generate_example_for_task(self, task_id):
-        """Generates a new input/output pair using re-arc for the given task_id."""
         gen_fn_name = f"generate_{task_id}"
-        if not hasattr(generators, gen_fn_name):
-             print(f"Warning: re-arc generator {gen_fn_name} not found. Skipping.")
-             return None
+        if not hasattr(generators, gen_fn_name): return None
         gen = getattr(generators, gen_fn_name)
         try:
             n = len(inspect.signature(gen).parameters)
             if n == 2: return gen(0.0, 1.0)
             if n == 1: return gen(self.rng.uniform(0.0, 1.0))
             return gen()
-        except Exception as e:
-            print(f"Warning: Generator {gen_fn_name} failed: {e}. Trying another task.")
-            return None
+        except Exception as e: print(f"Generator {gen_fn_name} failed: {e}"); return None
 
     def _obs(self):
-        """Constructs the multi-channel observation tensor."""
         current_state = np.where(self.canvas >= 0, self.canvas, self.generated_input)
         obs_tensor = np.full((TOTAL_CHANNELS, H, W), PAD_VALUE, dtype=np.int8)
         obs_tensor[0, :, :] = current_state
         num_pairs_to_use = min(len(self.original_train_pairs), MAX_TRAIN_PAIRS)
         for i in range(num_pairs_to_use):
             train_pair = self.original_train_pairs[i]
-            padded_train_input = pad_grid(train_pair['input'], fill=PAD_VALUE)
-            padded_train_output = pad_grid(train_pair['output'], fill=PAD_VALUE)
-            obs_tensor[1 + i, :, :] = padded_train_input
-            obs_tensor[1 + MAX_TRAIN_PAIRS + i, :, :] = padded_train_output
+            try: # Add try-except for robustness during obs building
+                padded_train_input = pad_grid(train_pair['input'], fill=PAD_VALUE)
+                padded_train_output = pad_grid(train_pair['output'], fill=PAD_VALUE)
+                obs_tensor[1 + i, :, :] = padded_train_input
+                obs_tensor[1 + MAX_TRAIN_PAIRS + i, :, :] = padded_train_output
+            except Exception as e:
+                 print(f"Warning: Error padding train pair {i} for obs: {e}")
+                 # Fill problematic channels with PAD_VALUE maybe?
+                 obs_tensor[1 + i, :, :] = PAD_VALUE
+                 obs_tensor[1 + MAX_TRAIN_PAIRS + i, :, :] = PAD_VALUE
         return obs_tensor.flatten()
     # --- End unchanged methods ---
 
 
     def reset(self, *, seed=None, options=None):
         super().reset(seed=seed)
-        if seed is not None:
-             self.rng.seed(seed)
-
+        if seed is not None: self.rng.seed(seed)
         self.cur_step = 0
         generated_example = None
         while generated_example is None:
@@ -131,16 +130,25 @@ class ARCPuzzleEnv(Env):
             self.original_train_pairs = self._load_original_task(self.task_id)
             if not self.original_train_pairs: continue
             generated_example = self._generate_example_for_task(self.task_id)
+            if generated_example is None: continue # Try another task if generator failed
 
-        # --- Store original grid and dimensions BEFORE padding ---
-        original_output_grid_tmp = np.array(generated_example["output"], dtype=np.int8)
-        self.original_input_grid = np.array(generated_example["input"], dtype=np.int8) # Store original input
-        self.original_height, self.original_width = original_output_grid_tmp.shape     # Store original output dimensions
-        # --- End Store ---
+            # Validate generated example structure
+            if not isinstance(generated_example, dict) or 'input' not in generated_example or 'output' not in generated_example:
+                print(f"Warning: Invalid example structure from generator for {self.task_id}. Retrying.")
+                generated_example = None # Force retry
+                continue
 
-        # Pad for internal state and observation building
-        self.generated_input = pad_grid(self.original_input_grid, fill=0)
-        self.generated_output = pad_grid(original_output_grid_tmp, fill=0) # Target for comparison
+        try:
+            original_output_grid_tmp = np.array(generated_example["output"], dtype=np.int8)
+            self.original_input_grid = np.array(generated_example["input"], dtype=np.int8)
+            self.original_height, self.original_width = original_output_grid_tmp.shape
+            self.generated_input = pad_grid(self.original_input_grid, fill=0)
+            self.generated_output = pad_grid(original_output_grid_tmp, fill=0) # Padded target
+        except Exception as e:
+            print(f"Error processing generated example for {self.task_id}: {e}. Resetting might fail.")
+            # Handle error state appropriately, maybe raise or retry reset logic
+            raise RuntimeError(f"Failed to process generated example during reset: {e}") from e
+
 
         self.canvas.fill(-1)
         initial_obs = self._obs()
@@ -158,52 +166,107 @@ class ARCPuzzleEnv(Env):
         c = np.clip(c, 0, W - 1)
         color = np.clip(color, 0, N_COLORS - 1)
 
-        # Initialize per-step bookkeeping
+        # Initialize rewards and flags
         reward = 0.0
-        pixel_correct = 0
+        pixel_reward = 0.0
+        patch_shaping_reward = 0.0
+        repaint_penalty = 0.0
+        time_penalty = -0.01 # Constant time penalty per step
+
         painted_this_step = False
-        
-        # --- FIRST-PAINT REWARD LOGIC ---
-        if self.canvas[r, c] == -1:
+        pixel_correct = 0 # 0: incorrect, 1: correct (only if painted_this_step)
+        patch_completeness = 0.0 # Initialize patch completeness
+
+        # --- Action Execution & Reward Calculation ---
+        if self.canvas[r, c] == -1: # Only evaluate reward if cell is unpainted
             painted_this_step = True
+            target_color = int(self.generated_output[r, c]) # Target color from padded final grid
+
+            # 1) Calculate Immediate Per-Pixel Reward
+            is_core = (r < self.original_height and c < self.original_width)
+            if color == target_color:
+                pixel_correct = 1
+                if is_core:
+                    pixel_reward = 1.0 # Core Correct
+                else:
+                    pixel_reward = 0.1 # Padding Correct
+            else: # Incorrect color painted
+                if is_core:
+                    pixel_reward = -0.5 # Core Incorrect
+                else:
+                    pixel_reward = -1.5 # Padding Incorrect
+
+            # Apply the paint action *after* determining correctness based on previous state
             self.canvas[r, c] = color
-        #     target_color = self.generated_output[r, c]
-        #     is_core = (0 <= r < self.original_height and 0 <= c < self.original_width)
-        #     needed  = (self.generated_input[r, c] != target_color)
-        
-        #     if is_core and color == target_color and needed:
-        #         reward = +1.0;  pixel_correct = 1
-        #     elif is_core and color != target_color:
-        #         reward = -0.3
-        #     elif not is_core and color == target_color:
-        #         reward = 0.0
-        #     else:
-        #         reward = -0.7
-        # else:
-        #     reward = -0.5         # Penalise any repaint
-        
-        # reward += -0.01          # Tiny time penalty
 
-        correct = int(color == self.generated_output[r, c])
-        reward  = 1.0 * correct - 0.2 * (1 - correct)
+            # 2) Calculate Patch Shaping Reward (only if we painted)
+            # Define patch boundaries centered at (r, c) - clamped to grid edges
+            half_patch = self.patch_size // 2
+            r_start = max(0, r - half_patch)
+            r_end = min(H, r + half_patch + 1) # Slice goes up to, but not including, end
+            c_start = max(0, c - half_patch)
+            c_end = min(W, c + half_patch + 1)
 
+            # Extract patches (predicted uses current canvas, target uses final target)
+            predicted_patch = self.canvas[r_start:r_end, c_start:c_end]
+            target_patch = self.generated_output[r_start:r_end, c_start:c_end]
+
+            # Calculate match score (partial credit)
+            # Ignore -1 in predicted patch when comparing? Or assume target isn't -1?
+            # Let's count matches where prediction is not -1.
+            valid_prediction_mask = (predicted_patch != -1)
+            matching_pixels = np.sum(predicted_patch[valid_prediction_mask] == target_patch[valid_prediction_mask])
+            total_pixels_in_patch = predicted_patch.size # e.g., 9 for 3x3
+
+            if total_pixels_in_patch > 0:
+                patch_completeness = matching_pixels / total_pixels_in_patch
+                patch_shaping_reward = self.max_patch_reward * patch_completeness
+            else:
+                patch_completeness = 0.0 # Should not happen if patch_size >= 1
+                patch_shaping_reward = 0.0
+
+        else: # Cell was already painted
+            painted_this_step = False
+            repaint_penalty = -5 # Apply penalty for repainting
+
+        # Combine reward components
+        reward = pixel_reward + patch_shaping_reward + repaint_penalty + time_penalty
+    
+        # --- Episode Termination & Final Bonus ---
         self.cur_step += 1
-        terminated = (self.cur_step >= self.episode_len)
-        if self.cur_step >= self.episode_len:
+        done = (self.cur_step >= self.episode_len)
+        final_board = None
+        solved = 0  # Initialize solved status
+    
+        if done:
+            # Use the standard final board calculation (fills unpainted with input)
             final_board = np.where(self.canvas >= 0, self.canvas, self.generated_input)
-            exact_match = int(np.array_equal(final_board, self.generated_output))
-            reward += 100.0 * exact_match  # Big terminal bonus
-
-        # --- Return Values ---
-        # Use self._obs() to get the next observation if not terminated
+            solved = int(np.array_equal(final_board, self.generated_output))
+            reward += 100.0 * solved  # Significant final bonus
+    
+        # Always return a valid observation, even if done.
+        # SB3 needs a valid array for "terminal_observation."
         next_obs = self._obs()
+    
         info = {
-            "task_id": self.task_id,
-            "pixel_correct": pixel_correct if painted_this_step else 0,
-            "action_taken": (r, c, color),
             "painted_cell": painted_this_step,
+            "pixel_correct": pixel_correct,  # 1 if painted and correct, 0 otherwise
+            "task_id": self.task_id,         # Include task_id
+            "step_reward_components": {
+                "pixel": pixel_reward,
+                "patch_shape": patch_shaping_reward,
+                "repaint": repaint_penalty,
+                "time": time_penalty,
+                "patch_completeness": round(patch_completeness, 3)
+            }
         }
-        if terminated:
-            info["final_exact_match"] = exact_match # Add final match info
-
-        return next_obs, reward, terminated, False, info # Assuming no truncation
+    
+        if done:
+            info["final_exact_match"] = solved
+            # Optionally log the final bonus, e.g.:
+            # info["step_reward_components"]["final_bonus"] = 100.0 * solved
+    
+        # Ensure reward is float
+        reward = float(reward)
+    
+        return next_obs, reward, done, False, info
